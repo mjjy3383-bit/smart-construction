@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkers } from '../context/WorkerContext';
-import { ArrowLeft, UserCheck, Settings, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, UserCheck, Settings, CheckCircle2, XCircle, Map as MapIcon, List as ListIcon } from 'lucide-react';
+import WorkerMapView from '../components/WorkerMapView';
 
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const { workers, updateWorker } = useWorkers();
   const [editingId, setEditingId] = useState(null);
+  const [activeTab, setActiveTab] = useState('list'); // 'list' | 'map'
   
   // Edit Form State
   const [editForm, setEditForm] = useState({});
@@ -17,12 +19,18 @@ export default function ManagerDashboard() {
       authArea: worker.authArea === '미배정 (관리자 승인 대기)' ? '' : worker.authArea,
       emergencyPhone: worker.emergencyPhone === '미등록' ? '' : worker.emergencyPhone,
       safetyTraining: worker.safetyTraining,
-      permitStatus: worker.permitStatus
+      permitStatus: worker.permitStatus,
+      floor: worker.floor || '미배정'
     });
   };
 
   const handleSave = () => {
-    updateWorker(editingId, editForm);
+    let finalForm = { ...editForm };
+    if (editForm.floor !== '미배정' && !workers.find(w => w.id === editingId)?.x) {
+      finalForm.x = Math.floor(Math.random() * 80) + 10;
+      finalForm.y = Math.floor(Math.random() * 80) + 10;
+    }
+    updateWorker(editingId, finalForm);
     setEditingId(null);
     alert('작업자 상태가 갱신되었습니다.');
   };
@@ -37,8 +45,19 @@ export default function ManagerDashboard() {
         <p className="page-subtitle">작업자 승인 및 상태 관리</p>
       </div>
 
+      <div style={{ display: 'flex', background: 'white', padding: '8px', margin: '0 20px 20px', borderRadius: '12px', boxShadow: 'var(--glass-shadow)' }}>
+        <button onClick={() => setActiveTab('list')} style={{ flex: 1, padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', background: activeTab === 'list' ? 'var(--primary-light)' : 'transparent', color: activeTab === 'list' ? 'var(--primary-color)' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}>
+          <ListIcon size={18} /> 작업자 리스트
+        </button>
+        <button onClick={() => setActiveTab('map')} style={{ flex: 1, padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', background: activeTab === 'map' ? 'var(--primary-light)' : 'transparent', color: activeTab === 'map' ? 'var(--primary-color)' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}>
+          <MapIcon size={18} /> 실시간 도면 뷰
+        </button>
+      </div>
+
       <div style={{ padding: '0 20px' }}>
-        {workers.length === 0 ? (
+        {activeTab === 'map' ? (
+          <WorkerMapView />
+        ) : workers.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)', background: 'white', borderRadius: '16px', boxShadow: 'var(--glass-shadow)' }}>
             등록된 작업자가 없습니다.
           </div>
@@ -64,9 +83,20 @@ export default function ManagerDashboard() {
               {editingId === worker.id ? (
                 <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
                   <div className="form-group" style={{ marginBottom: '12px' }}>
-                    <label className="form-label" style={{ fontSize: '12px' }}>권한 구역 배정</label>
+                    <label className="form-label" style={{ fontSize: '12px' }}>투입 층수 배정 (1~4층)</label>
+                    <select className="form-input" style={{ padding: '10px', appearance: 'auto' }}
+                      value={editForm.floor} onChange={(e) => setEditForm({...editForm, floor: e.target.value})}>
+                      <option value="미배정">미배정</option>
+                      <option value="1층">1층</option>
+                      <option value="2층">2층</option>
+                      <option value="3층">3층</option>
+                      <option value="4층">4층</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '12px' }}>
+                    <label className="form-label" style={{ fontSize: '12px' }}>권한 구역 상세 입력</label>
                     <input type="text" className="form-input" style={{ padding: '10px' }}
-                      value={editForm.authArea} onChange={(e) => setEditForm({...editForm, authArea: e.target.value})} placeholder="예: A동 1~5층" />
+                      value={editForm.authArea} onChange={(e) => setEditForm({...editForm, authArea: e.target.value})} placeholder="예: 2층 A구역 철근조립반" />
                   </div>
                   <div className="form-group" style={{ marginBottom: '12px' }}>
                     <label className="form-label" style={{ fontSize: '12px' }}>비상 연락망</label>
