@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWorkers } from '../context/WorkerContext';
-import { ArrowLeft, UserCheck, Settings, CheckCircle2, XCircle, Map as MapIcon, List as ListIcon } from 'lucide-react';
+import { ArrowLeft, UserCheck, Settings, CheckCircle2, XCircle, Map as MapIcon, List as ListIcon, Trash2 } from 'lucide-react';
 import WorkerMapView from '../components/WorkerMapView';
 
 export default function ManagerDashboard() {
   const navigate = useNavigate();
-  const { workers, updateWorker } = useWorkers();
+  const { workers, updateWorker, deleteWorker } = useWorkers();
   const [editingId, setEditingId] = useState(null);
   const [activeTab, setActiveTab] = useState('list'); // 'list' | 'map'
   
@@ -141,6 +141,9 @@ export default function ManagerDashboard() {
                   </button>
                   <button onClick={() => navigate(`/profile/${worker.id}`)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '8px', background: 'var(--primary-light)', color: 'var(--primary-color)', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                     <UserCheck size={14} /> 프로필 뷰 확인
+                  </button>
+                  <button onClick={() => { if(window.confirm('정말 이 작업자를 삭제하시겠습니까?')) deleteWorker(worker.id); }} style={{ flex: 0.4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '8px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                    <Trash2 size={14} /> 삭제
                   </button>
                 </div>
               )}

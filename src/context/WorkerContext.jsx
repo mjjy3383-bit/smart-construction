@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, onSnapshot, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const WorkerContext = createContext();
 
@@ -66,8 +66,22 @@ export const WorkerProvider = ({ children }) => {
     }
   };
 
+  const deleteWorker = async (id) => {
+    if (db) {
+      try {
+        await deleteDoc(doc(db, 'workers', id));
+      } catch (error) {
+        console.error("Error deleting worker in Firebase:", error);
+        alert("데이터베이스 연결 오류로 로컬에만 반영됩니다.");
+        setWorkers(prev => prev.filter(w => w.id !== id));
+      }
+    } else {
+      setWorkers(prev => prev.filter(w => w.id !== id));
+    }
+  };
+
   return (
-    <WorkerContext.Provider value={{ workers, addWorker, updateWorker }}>
+    <WorkerContext.Provider value={{ workers, addWorker, updateWorker, deleteWorker }}>
       {children}
     </WorkerContext.Provider>
   );
