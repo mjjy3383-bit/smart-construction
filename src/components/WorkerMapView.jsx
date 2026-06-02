@@ -7,6 +7,15 @@ export default function WorkerMapView() {
   const [selectedFloor, setSelectedFloor] = useState('1층');
   const [activeWorker, setActiveWorker] = useState(null);
   const [positions, setPositions] = useState({});
+  const [demoFallen, setDemoFallen] = useState(false);
+
+  // 시연용: 5초 뒤 모든 작업자 빨간색 점멸 타이머
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDemoFallen(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // 초기 위치 세팅 및 이동 시뮬레이션
   useEffect(() => {
@@ -77,6 +86,7 @@ export default function WorkerMapView() {
         {mapWorkers.map(w => {
           const pos = positions[w.id] || { x: w.x || 50, y: w.y || 50 };
           const isActive = activeWorker?.id === w.id;
+          const isEffectivelyFallen = w.isFallen || demoFallen; // DB 연동 값 또는 5초 데모 타이머
           
           return (
             <div key={w.id} onClick={() => setActiveWorker(w)}
@@ -87,14 +97,14 @@ export default function WorkerMapView() {
               }}>
               <div style={{
                 width: isActive ? '18px' : '14px', height: isActive ? '18px' : '14px',
-                backgroundColor: w.isFallen ? '#ef4444' : (isActive ? '#f59e0b' : '#10b981'),
+                backgroundColor: isEffectivelyFallen ? '#ef4444' : (isActive ? '#f59e0b' : '#10b981'),
                 border: '2px solid white', borderRadius: '50%',
-                boxShadow: w.isFallen ? '0 0 15px #ef4444' : (isActive ? '0 0 15px #f59e0b' : '0 0 10px #10b981'),
-                animation: w.isFallen ? 'pulseRed 0.8s infinite alternate' : 'none'
+                boxShadow: isEffectivelyFallen ? '0 0 15px #ef4444' : (isActive ? '0 0 15px #f59e0b' : '0 0 10px #10b981'),
+                animation: isEffectivelyFallen ? 'pulseRed 0.8s infinite alternate' : 'none'
               }} />
               {isActive && (
-                <div style={{ position: 'absolute', top: '-24px', left: '50%', transform: 'translateX(-50%)', background: w.isFallen ? '#ef4444' : 'black', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
-                  {w.isFallen ? '⚠️ 쓰러짐 감지!' : w.name}
+                <div style={{ position: 'absolute', top: '-24px', left: '50%', transform: 'translateX(-50%)', background: isEffectivelyFallen ? '#ef4444' : 'black', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                  {isEffectivelyFallen ? '⚠️ 쓰러짐 감지!' : w.name}
                 </div>
               )}
             </div>
