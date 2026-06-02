@@ -158,7 +158,7 @@ export default function WorkerMapView() {
             </div>
             
             <div style={{ width: '100%', height: '200px', background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <video src="/0602.mp4" autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <video src="/0602.mp4.mp4" autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: 'rgba(255,255,255,0.2)', boxShadow: '0 0 10px rgba(255,255,255,0.5)', animation: 'scan 3s infinite linear' }} />
