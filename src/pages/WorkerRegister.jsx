@@ -17,6 +17,7 @@ export default function WorkerRegister() {
   });
 
   const [generatedSerial, setGeneratedSerial] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 공종 코드 매핑 (예시)
   const roleCodeMap = {
@@ -60,22 +61,41 @@ export default function WorkerRegister() {
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const imageUrl = URL.createObjectURL(file);
-      setFormData({ 
-        ...formData, 
-        safetyTrainingImageName: file.name,
-        safetyTrainingImageUrl: imageUrl 
-      });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800; // 최대 너비 800px로 압축
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const base64Url = canvas.toDataURL('image/jpeg', 0.7); // 70% 품질로 압축
+          
+          setFormData({ 
+            ...formData, 
+            safetyTrainingImageName: file.name,
+            safetyTrainingImageUrl: base64Url 
+          });
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.name || !formData.phone) {
       alert("이름과 연락처는 필수입니다.");
       return;
     }
+    
+    if (isSubmitting) return; // 중복 전송 방지
+    setIsSubmitting(true);
 
     const newWorker = {
       ...formData,
@@ -85,11 +105,17 @@ export default function WorkerRegister() {
       safetyTrainingImageUrl: formData.safetyTrainingImageUrl,
       permitStatus: '미승인', // Default false
       emergencyPhone: '미등록',
+      isFallen: false, // 기본 쓰러짐 상태는 false
     };
 
-    addWorker(newWorker);
-    alert('작업자 등록이 완료되었습니다. 현장 관리자의 승인을 대기해 주세요.');
-    navigate('/');
+    try {
+      await addWorker(newWorker);
+      alert('작업자 등록이 완료되었습니다. 현장 관리자의 승인을 대기해 주세요.');
+      navigate('/');
+    } catch (err) {
+      setIsSubmitting(false);
+      alert('등록 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -176,16 +202,16 @@ export default function WorkerRegister() {
               background: '#f8fafc', padding: '16px', borderRadius: '12px', 
               border: '1px solid #e2e8f0', marginBottom: '20px', textAlign: 'center'
             }}>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>생성된 헬멧 일련번호</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>일련번호</p>
               <p style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary-color)', letterSpacing: '2px' }}>
                 {generatedSerial}
               </p>
             </div>
           )}
 
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="submit-btn" disabled={isSubmitting} style={{ opacity: isSubmitting ? 0.7 : 1 }}>
             <HardHat size={20} />
-            정보 등록 및 승인 요청
+            {isSubmitting ? '등록 중입니다...' : '정보 등록 및 승인 요청'}
           </button>
         </form>
       </div>

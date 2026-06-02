@@ -87,13 +87,14 @@ export default function WorkerMapView() {
               }}>
               <div style={{
                 width: isActive ? '18px' : '14px', height: isActive ? '18px' : '14px',
-                backgroundColor: isActive ? '#f59e0b' : '#10b981',
+                backgroundColor: w.isFallen ? '#ef4444' : (isActive ? '#f59e0b' : '#10b981'),
                 border: '2px solid white', borderRadius: '50%',
-                boxShadow: isActive ? '0 0 15px #f59e0b' : '0 0 10px #10b981'
+                boxShadow: w.isFallen ? '0 0 15px #ef4444' : (isActive ? '0 0 15px #f59e0b' : '0 0 10px #10b981'),
+                animation: w.isFallen ? 'pulseRed 0.8s infinite alternate' : 'none'
               }} />
               {isActive && (
-                <div style={{ position: 'absolute', top: '-24px', left: '50%', transform: 'translateX(-50%)', background: 'black', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-                  {w.name}
+                <div style={{ position: 'absolute', top: '-24px', left: '50%', transform: 'translateX(-50%)', background: w.isFallen ? '#ef4444' : 'black', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                  {w.isFallen ? '⚠️ 쓰러짐 감지!' : w.name}
                 </div>
               )}
             </div>
@@ -146,12 +147,8 @@ export default function WorkerMapView() {
               <Video size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }}/> CH-04 ({activeWorker.floor})
             </div>
             
-            <div style={{ width: '100%', height: '200px', background: 'repeating-linear-gradient(0deg, #1e293b, #1e293b 2px, #0f172a 2px, #0f172a 4px)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ textAlign: 'center' }}>
-                <Video size={48} color="#475569" style={{ marginBottom: '8px', opacity: 0.5 }} />
-                <p style={{ color: '#94a3b8', fontSize: '12px' }}>최근접 카메라 스트리밍 중...</p>
-                <p style={{ color: '#cbd5e1', fontSize: '14px', fontWeight: '600', marginTop: '8px' }}>타겟: {activeWorker.name} ({activeWorker.helmetId})</p>
-              </div>
+            <div style={{ width: '100%', height: '200px', background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <video src="/0602.mp4" autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: 'rgba(255,255,255,0.2)', boxShadow: '0 0 10px rgba(255,255,255,0.5)', animation: 'scan 3s infinite linear' }} />
@@ -160,6 +157,7 @@ export default function WorkerMapView() {
           <style dangerouslySetInnerHTML={{__html: `
             @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
             @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+            @keyframes pulseRed { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.4); opacity: 0.8; } }
           `}} />
         </div>
       )}
